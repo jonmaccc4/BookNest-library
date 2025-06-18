@@ -6,7 +6,7 @@ from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from routes.auth import auth_bp
 
-from models import db  
+from backend.models import db  
 
 
 from routes.users import users_bp

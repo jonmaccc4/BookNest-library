@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
-from models import db, Book
+from flask_jwt_extended import jwt_required, get_jwt
+from backend.models import db, Book
 
 books_bp = Blueprint('books', __name__, url_prefix='/books')
 
-# GET all books
+#  GET all books any logged-in user
 @books_bp.route('/', methods=['GET'])
+@jwt_required()
 def get_books():
     books = Book.query.all()
     return jsonify([{
@@ -14,9 +16,14 @@ def get_books():
         'genre': book.genre
     } for book in books]), 200
 
-# POST new book
+#  POST new book admin only
 @books_bp.route('/', methods=['POST'])
+@jwt_required()
 def create_book():
+    claims = get_jwt()
+    if not claims.get("is_admin"):
+        return jsonify({'error': 'Admin access required'}), 403
+
     data = request.get_json()
     new_book = Book(
         title=data.get('title'),
@@ -27,9 +34,14 @@ def create_book():
     db.session.commit()
     return jsonify({'message': 'Book added successfully'}), 201
 
-# DELETE a book
+# DELETE book admin only
 @books_bp.route('/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_book(id):
+    claims = get_jwt()
+    if not claims.get("is_admin"):
+        return jsonify({'error': 'Admin access required'}), 403
+
     book = Book.query.get_or_404(id)
     db.session.delete(book)
     db.session.commit()

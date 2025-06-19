@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from datetime import timedelta
 
 db = SQLAlchemy()
 
@@ -28,11 +29,13 @@ class Book(db.Model):
     def __repr__(self):
         return f"<Book {self.title}>"
 
+
 class Loan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     borrowed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    due_date = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=14))  
     returned_at = db.Column(db.DateTime)
 
 class ReadingList(db.Model):

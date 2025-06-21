@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
+from backend.models import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity, get_jwt
@@ -8,8 +8,7 @@ from datetime import timedelta
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
-
-# GET /users/all - Admin: Get all users
+# GET all users (admin only)
 @users_bp.route('/all', methods=['GET'])
 @jwt_required()
 def get_all_users():
@@ -27,26 +26,34 @@ def get_all_users():
         } for user in users
     ]), 200
 
-# POST /users/signup - Register new user
+# POST - Register a new user
 @users_bp.route('/signup', methods=['POST'])
 def signup_user():
     data = request.get_json()
+    if not data.get('username') or not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Username, email, and password are required'}), 400
+
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already registered'}), 400
+
     new_user = User(
-        username=data.get('username'),
-        email=data.get('email'),
-        password_hash=generate_password_hash(data.get('password'))
+        username=data['username'],
+        email=data['email'],
+        password_hash=generate_password_hash(data['password'])
     )
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User signed up successfully'}), 201
 
-
-# POST /users/login - Log in user
+# POST - Log in
 @users_bp.route('/login', methods=['POST'])
 def login_user():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
 
     user = User.query.filter_by(email=email).first()
     if user and check_password_hash(user.password_hash, password):
@@ -67,13 +74,15 @@ def login_user():
         }), 200
     return jsonify({'error': 'Invalid email or password'}), 401
 
-
-# GET /users/me - Get current user profile
+# GET - View own profile
 @users_bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_my_profile():
     user_id = get_jwt_identity()
-    user = User.query.get_or_404(user_id)
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
     return jsonify({
         'id': user.id,
@@ -82,13 +91,16 @@ def get_my_profile():
         'is_admin': user.is_admin
     }), 200
 
-
-# PATCH /users/me - Update current user profile
+# PATCH - Update own profile
 @users_bp.route('/me', methods=['PATCH'])
 @jwt_required()
 def update_my_profile():
     user_id = get_jwt_identity()
-    user = User.query.get_or_404(user_id)
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     data = request.get_json()
 
     if 'username' in data:
@@ -101,7 +113,7 @@ def update_my_profile():
     db.session.commit()
     return jsonify({'message': 'Profile updated successfully'}), 200
 
-# DELETE /users/<id> - Admin: Delete user by ID
+# DELETE - Delete a user (admin only)
 @users_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(id):
@@ -109,13 +121,15 @@ def delete_user(id):
     if not claims.get("is_admin"):
         return jsonify({'error': 'Admin access required'}), 403
 
-    user = User.query.get_or_404(id)
+    user = User.query.get(id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     db.session.delete(user)
     db.session.commit()
     return jsonify({'message': 'User deleted'}), 200
 
-# PATCH /users/<id>/promote - Admin: Promote or demote a user
-
+# PATCH - Update user's admin status (admin only)
 @users_bp.route('/<int:id>/promote', methods=['PATCH'])
 @jwt_required()
 def promote_user(id):
@@ -123,7 +137,10 @@ def promote_user(id):
     if not claims.get("is_admin"):
         return jsonify({'error': 'Admin access required'}), 403
 
-    user = User.query.get_or_404(id)
+    user = User.query.get(id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     data = request.get_json()
     user.is_admin = data.get('is_admin', user.is_admin)
     db.session.commit()

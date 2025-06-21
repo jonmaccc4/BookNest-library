@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 loans_bp = Blueprint('loans', __name__, url_prefix='/loans')
 
-#GET all loans (admin only)
+# GET all loans (admin only)
 @loans_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_loans():
@@ -20,17 +20,24 @@ def get_loans():
             'user_id': loan.user_id,
             'book_id': loan.book_id,
             'borrowed_at': loan.borrowed_at,
-            'returned_at': loan.returned_at
+            'returned_at': loan.returned_at,
+            'due_date': loan.due_date
         } for loan in loans
     ]), 200
 
 
-#POST  User borrows a book
+# POST user borrows a book
 @loans_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_loan():
     data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Invalid JSON payload'}), 400
+
     book_id = data.get('book_id')
+    if not book_id:
+        return jsonify({'error': 'book_id is required'}), 400
+
     current_user_id = get_jwt_identity()
 
     book = Book.query.get(book_id)
@@ -53,32 +60,38 @@ def create_loan():
     return jsonify({'message': 'Book borrowed successfully'}), 201
 
 
-#  PATCH  User returns a book
+# PATCH user returns a book
 @loans_bp.route('/<int:id>', methods=['PATCH'])
 @jwt_required()
 def return_book(id):
-    loan = Loan.query.get_or_404(id)
-    current_user_id = get_jwt_identity()
+    loan = Loan.query.get(id)
+    if not loan:
+        return jsonify({'error': 'Loan not found'}), 404
 
+    current_user_id = get_jwt_identity()
     if loan.user_id != current_user_id:
         return jsonify({'error': 'Not authorized to return this book'}), 403
 
     if loan.returned_at:
-        return jsonify({'message': 'Book already returned'}), 400
+        return jsonify({'error': 'Book already returned'}), 400
 
     loan.returned_at = datetime.utcnow()
     db.session.commit()
     return jsonify({'message': 'Book returned successfully'}), 200
 
 
-# DELETE Delete a loan 
+# DELETE a loan
 @loans_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_loan(id):
-    loan = Loan.query.get_or_404(id)
-    current_user_id = get_jwt_identity()
+    loan = Loan.query.get(id)
+    if not loan:
+        return jsonify({'error': 'Loan not found'}), 404
 
-    if loan.user_id != current_user_id:
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+
+    if loan.user_id != current_user_id and not claims.get("is_admin"):
         return jsonify({'error': 'Not authorized to delete this loan'}), 403
 
     db.session.delete(loan)

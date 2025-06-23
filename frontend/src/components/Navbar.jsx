@@ -1,54 +1,50 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function Navbar() {
+export default function Navbar() {
   const { token, logout, username, isAdmin } = useAuth();
-
-  if (!token) return null; // Hide navbar when not logged in
+  if (!token) return null;
 
   return (
-    <nav style={styles.nav}>
-      <span style={styles.welcome}>Welcome, {username}</span>
-      <div style={styles.links}>
-        <Link to="/books" style={styles.link}>Books</Link>
-        <Link to="/loans/my" style={styles.link}>My Loans</Link>
-        <Link to="/reading-list" style={styles.link}>Reading List</Link>
-        {isAdmin && <Link to="/admin" style={styles.link}>Admin</Link>} {/* 👈 show only if admin */}
-        <button onClick={logout} style={styles.logout}>Logout</button>
+    <nav className="bg-gray-800 text-white">
+      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 space-y-3 sm:space-y-0">
+        {/* Left: Brand + Links */}
+        <div>
+          <div className="text-lg font-bold mb-1">BookNest</div>
+          <div className="flex space-x-6">
+            <Link to="/books" className="hover:text-gray-300 transition">
+              Books
+            </Link>
+            <Link to="/loans/my" className="hover:text-gray-300 transition">
+              My Loans
+            </Link>
+            <Link to="/reading-list" className="hover:text-gray-300 transition">
+              Reading List
+            </Link>
+            {isAdmin && (
+              <Link to="/admin" className="hover:text-gray-300 transition">
+                Admin
+              </Link>
+            )}
+            <Link to="/profile" className="hover:text-gray-300 transition">
+              Profile
+            </Link>
+          </div>
+        </div>
+
+        {/* Right: Welcome + Logout */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm">
+          <span className="bg-gray-700 rounded-full px-3 py-1 mb-1 sm:mb-0">
+            Welcome, <span className="font-semibold">{username}</span>!
+          </span>
+          <button
+            onClick={logout}
+            className="px-4 py-1 bg-red-600 hover:bg-red-700 rounded transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </nav>
   );
 }
-
-const styles = {
-  nav: {
-    backgroundColor: "#333",
-    color: "#fff",
-    padding: "10px 20px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  welcome: {
-    fontWeight: "bold",
-  },
-  links: {
-    display: "flex",
-    gap: "15px",
-    alignItems: "center",
-  },
-  link: {
-    color: "#fff",
-    textDecoration: "none",
-  },
-  logout: {
-    backgroundColor: "#ff4d4d",
-    color: "#fff",
-    border: "none",
-    padding: "5px 10px",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-};
-
-export default Navbar;

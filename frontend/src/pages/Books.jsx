@@ -5,142 +5,109 @@ import { useNavigate } from "react-router-dom";
 function Books() {
   const [books, setBooks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const { token, username, logout } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBooks = async () => {
       const res = await fetch("http://localhost:5000/books/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (res.status === 401 || res.status === 403) {
         logout();
         navigate("/login");
         return;
       }
-
       const data = await res.json();
       if (res.ok) setBooks(data);
     };
-
     if (token) fetchBooks();
   }, [token, logout, navigate]);
 
   const borrowBook = async (bookId) => {
-    try {
-      const res = await fetch("http://localhost:5000/loans/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ book_id: bookId }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert(data.message);
-      } else {
-        alert(data.error || "Borrowing failed.");
-      }
-    } catch (error) {
-      console.error("Borrow error:", error);
-      alert("An error occurred while borrowing.");
-    }
+    const res = await fetch("http://localhost:5000/loans/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ book_id: bookId }),
+    });
+    const data = await res.json();
+    alert(res.ok ? data.message : data.error || "Borrowing failed.");
   };
 
   const addToReadingList = async (bookId) => {
-    try {
-      const res = await fetch("http://localhost:5000/reading-list/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ book_id: bookId }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("Book added to reading list.");
-      } else {
-        alert(data.error || "Could not add to reading list.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Network error.");
-    }
+    const res = await fetch("http://localhost:5000/reading-list/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ book_id: bookId }),
+    });
+    const data = await res.json();
+    alert(res.ok ? "Added to reading list." : data.error || "Failed.");
   };
 
-  const filteredBooks = books.filter((book) => {
+  const filteredBooks = books.filter((b) => {
     const q = searchQuery.toLowerCase();
     return (
-      book.title.toLowerCase().includes(q) ||
-      book.author.toLowerCase().includes(q) ||
-      book.genre.toLowerCase().includes(q)
+      b.title.toLowerCase().includes(q) ||
+      b.author.toLowerCase().includes(q) ||
+      b.genre.toLowerCase().includes(q)
     );
   });
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto" }}>
-      <h3>Available Books</h3>
+    <div className="min-h-screen bg-gray-100 pt-6 pb-12">
+      <div className="max-w-4xl mx-auto px-4">
+        <h3 className="text-3xl font-bold text-gray-800 mb-6">Available Books</h3>
 
-      <input
-        type="text"
-        placeholder="Search by title, author, or genre..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        style={{
-          width: "100%",
-          padding: "8px",
-          marginBottom: "15px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-        }}
-      />
+        <input
+          type="text"
+          placeholder="Search by title, author, or genre..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-3 mb-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
 
-      {filteredBooks.length === 0 ? (
-        <p>No books found.</p>
-      ) : (
-        <ul style={{ paddingLeft: 0 }}>
-          {filteredBooks.map((book) => (
-            <li key={book.id} style={{ marginBottom: "10px", listStyleType: "none" }}>
-              <strong>{book.title}</strong> by {book.author} ({book.genre})
-              <button
-                style={{
-                  marginLeft: "10px",
-                  padding: "4px 10px",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-                onClick={() => borrowBook(book.id)}
+        {filteredBooks.length === 0 ? (
+          <p className="text-center text-gray-600">No books match your search.</p>
+        ) : (
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filteredBooks.map((book) => (
+              <li
+                key={book.id}
+                className="bg-white shadow-md rounded-lg p-5 flex flex-col justify-between"
               >
-                Borrow
-              </button>
-              <button
-                style={{
-                  marginLeft: "10px",
-                  padding: "4px 10px",
-                  backgroundColor: "#28a745",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-                onClick={() => addToReadingList(book.id)}
-              >
-                Add to Reading List
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                <div>
+                  <h4 className="text-xl font-semibold text-gray-900">{book.title}</h4>
+                  <p className="text-gray-700 mt-1">
+                    by <span className="font-medium">{book.author}</span> <br />
+                    <span className="italic text-sm text-gray-500">{book.genre}</span>
+                  </p>
+                </div>
+                <div className="mt-4 flex space-x-3">
+                <button
+                  onClick={() => borrowBook(book.id)}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1 text-sm rounded transition"
+                >
+                  Borrow
+                </button>
+                <button
+                  onClick={() => addToReadingList(book.id)}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 text-sm rounded transition"
+                >
+                  Add to Reading List
+                </button>
+              </div>
+
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

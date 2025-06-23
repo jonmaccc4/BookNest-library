@@ -25,6 +25,27 @@ def get_loans():
         } for loan in loans
     ]), 200
 
+# GET current user's own loans
+@loans_bp.route('/my', methods=['GET'])
+@jwt_required()
+def get_my_loans():
+    user_id = get_jwt_identity()
+    my_loans = Loan.query.filter_by(user_id=user_id).all()
+
+    return jsonify([
+        {
+            'id': loan.id,
+            'book_id': loan.book_id,
+            'borrowed_at': loan.borrowed_at,
+            'returned_at': loan.returned_at,
+            'book': {
+                'title': loan.book.title,
+                'author': loan.book.author,
+                'genre': loan.book.genre
+            }
+        } for loan in my_loans
+    ]), 200
+
 
 # POST user borrows a book
 @loans_bp.route('/', methods=['POST'])

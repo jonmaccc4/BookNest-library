@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from routes.auth import auth_bp
+from routes.admin import admin_bp
 
 from models import db  
 
@@ -34,7 +35,8 @@ def create_app():
     app.register_blueprint(loans_bp)
     app.register_blueprint(reading_list_bp)
     app.register_blueprint(auth_bp)
-    
+    app.register_blueprint(admin_bp)
+
     return app
 
 app = create_app()

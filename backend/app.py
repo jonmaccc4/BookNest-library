@@ -4,32 +4,35 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+
+from models import db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
-
-from models import db  
-
-
 from routes.users import users_bp
 from routes.books import books_bp
 from routes.loans import loans_bp
 from routes.reading_list import reading_list_bp
 
+
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('config.Config')
 
+   
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///booknest.db'  # or your PostgreSQL URI
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # JWT configuration
+    app.config["JWT_SECRET_KEY"] = "jonjonjon"
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
+    app.config["JWT_VERIFY_SUB"] = False
+
+  
     db.init_app(app)
     Migrate(app, db)
     CORS(app)
-    
-    #jwt 
-    app.config["JWT_SECRET_KEY"] = "jonjonjon" 
-    jwt = JWTManager(app) 
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
-    jwt.init_app(app)
-    app.config["JWT_VERIFY_SUB"] = False
+    jwt = JWTManager(app)
 
+    #  Blueprints
     app.register_blueprint(users_bp)
     app.register_blueprint(books_bp)
     app.register_blueprint(loans_bp)
@@ -38,6 +41,7 @@ def create_app():
     app.register_blueprint(admin_bp)
 
     return app
+
 
 app = create_app()
 

@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, User, Loan, Book
 from functools import wraps
 from flask_bcrypt import Bcrypt
-from models import Book
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 bcrypt = Bcrypt()
@@ -24,12 +23,14 @@ def admin_required(fn):
 @admin_required
 def get_all_users():
     users = User.query.all()
-    return jsonify([{
-        "id": u.id,
-        "username": u.username,
-        "email": u.email,
-        "is_admin": u.is_admin
-    } for u in users]), 200
+    return jsonify([
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "is_admin": u.is_admin
+        } for u in users
+    ]), 200
 
 # Add a new user
 @admin_bp.route('/users', methods=['POST'])
@@ -129,7 +130,6 @@ def update_user(id):
     db.session.commit()
     return jsonify({"message": "User updated successfully"}), 200
 
-
 # Update a book
 @admin_bp.route('/books/<int:id>', methods=['PATCH'])
 @admin_required
@@ -145,3 +145,26 @@ def update_book(id):
 
     db.session.commit()
     return jsonify({"message": "Book updated successfully"}), 200
+
+#  Delete a book
+@admin_bp.route('/books/<int:id>', methods=['DELETE'])
+@admin_required
+def delete_book(id):
+    book = Book.query.get(id)
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({"message": "Book deleted successfully"}), 200
+
+@admin_bp.route('/books', methods=['GET'])
+@admin_required
+def get_all_books():
+    books = Book.query.all()
+    return jsonify([{
+        "id": b.id,
+        "title": b.title,
+        "author": b.author,
+        "genre": b.genre
+    } for b in books]), 200

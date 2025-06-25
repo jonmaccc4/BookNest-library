@@ -1,11 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Books from "./pages/Books";
 import MyLoans from "./pages/MyLoans";
 import ReadingList from "./pages/ReadingList";
 import AdminDashboard from "./pages/AdminDashboard";
-import UserProfile from "./pages/UserProfile"; 
+import UserProfile from "./pages/UserProfile";
 import PrivateRoute from "./components/PrivateRoute";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -50,7 +53,7 @@ function App() {
             <Route
               path="/admin"
               element={
-                <PrivateRoute>
+                <PrivateRoute adminOnly={true}>
                   <AdminDashboard />
                 </PrivateRoute>
               }
@@ -69,6 +72,7 @@ function App() {
         </main>
 
         <Footer />
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       </div>
     </Router>
   );

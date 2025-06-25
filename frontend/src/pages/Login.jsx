@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -22,14 +23,15 @@ function Login() {
     if (res.ok) {
       login(data.token, data.username, data.is_admin);
 
-      // Redirect to admin or user dashboard
+      toast.success(`Welcome back, ${data.username}!`);
+
       if (data.is_admin) {
         navigate("/admin");
       } else {
         navigate("/books");
       }
     } else {
-      alert(data.error || "Login failed");
+      toast.error(data.error || "Login failed. Please try again.");
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -19,10 +20,10 @@ function Register() {
     const data = await res.json();
 
     if (res.ok) {
-      alert("Registration successful!");
+      toast.success("Registration successful! You can now log in.");
       navigate("/login");
     } else {
-      alert(data.error || "Registration failed");
+      toast.error(data.error || "Registration failed. Please try again.");
     }
   };
 

@@ -1,10 +1,17 @@
+# app.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env
+load_dotenv()
+
+# Local imports
 from models import db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
@@ -13,26 +20,27 @@ from routes.books import books_bp
 from routes.loans import loans_bp
 from routes.reading_list import reading_list_bp
 
-
 def create_app():
     app = Flask(__name__)
 
-   
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///booknest.db'  # or your PostgreSQL URI
+    # Database configuration
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///booknest.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # JWT configuration
-    app.config["JWT_SECRET_KEY"] = "jonjonjon"
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
-    app.config["JWT_VERIFY_SUB"] = False
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'replace-me')
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(os.getenv('JWT_EXPIRES_HOURS', '24')))
+    app.config['JWT_VERIFY_SUB'] = False
 
-  
+    # CORS: Allow requests from React frontend
+    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
+    # Initialize extensions
     db.init_app(app)
     Migrate(app, db)
-    CORS(app)
-    jwt = JWTManager(app)
+    JWTManager(app)
 
-    #  Blueprints
+    # Register blueprints
     app.register_blueprint(users_bp)
     app.register_blueprint(books_bp)
     app.register_blueprint(loans_bp)
@@ -42,8 +50,11 @@ def create_app():
 
     return app
 
+# Print database info for verification
+print("From .env:", os.getenv('DATABASE_URL'))
 
 app = create_app()
+print("Using database:", app.config['SQLALCHEMY_DATABASE_URI'])
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true')

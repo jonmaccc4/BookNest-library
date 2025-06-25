@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt(app)
 
 with app.app_context():
-    # Delete old admin if exists
+    
     existing = User.query.filter_by(email="admin@booknest.com").first()
     if existing:
         db.session.delete(existing)
@@ -20,4 +20,4 @@ with app.app_context():
     )
     db.session.add(admin)
     db.session.commit()
-    print("✅ Admin created with bcrypt hash")
+    print(" Admin created with bcrypt hash")

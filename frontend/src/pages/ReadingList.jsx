@@ -7,6 +7,8 @@ const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function ReadingList() {
   const [list, setList] = useState([]);
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [noteInput, setNoteInput] = useState("");
   const { token, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -51,6 +53,34 @@ function ReadingList() {
     }
   };
 
+  const saveNote = async (id) => {
+    try {
+      const res = await fetch(`${BASE_URL}/reading-list/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ note: noteInput }),
+      });
+
+      if (res.ok) {
+        setList((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, note: noteInput } : item
+          )
+        );
+        setEditingNoteId(null);
+        setNoteInput("");
+        toast.success("Note updated.");
+      } else {
+        toast.error("Failed to update note.");
+      }
+    } catch (err) {
+      toast.error("Error updating note.");
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">My Reading List</h2>
@@ -70,11 +100,50 @@ function ReadingList() {
                 <p className="text-sm text-gray-700">
                   by {item.book.author} ({item.book.genre})
                 </p>
-                <p className="text-sm text-gray-500 italic">
-                  Note: {item.note || "No note added"}
-                </p>
+
+                {editingNoteId === item.id ? (
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      className="border px-2 py-1 rounded w-full"
+                    />
+                    <button
+                      onClick={() => saveNote(item.id)}
+                      className="bg-green-600 text-white px-3 py-1 rounded"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingNoteId(null);
+                        setNoteInput("");
+                      }}
+                      className="bg-gray-400 text-white px-3 py-1 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">
+                    Note: {item.note || "No note added"}
+                  </p>
+                )}
               </div>
-              <div className="mt-2">
+
+              <div className="mt-2 flex gap-3">
+                {editingNoteId !== item.id && (
+                  <button
+                    onClick={() => {
+                      setEditingNoteId(item.id);
+                      setNoteInput(item.note || "");
+                    }}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+                  >
+                    Edit Note
+                  </button>
+                )}
                 <button
                   onClick={() => removeFromList(item.id)}
                   className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"

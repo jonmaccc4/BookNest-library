@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function MyLoans() {
   const [loans, setLoans] = useState([]);
@@ -9,7 +12,7 @@ function MyLoans() {
 
   useEffect(() => {
     const fetchLoans = async () => {
-      const res = await fetch("http://localhost:5000/loans/my", {
+      const res = await fetch(`${BASE_URL}/loans/my`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -29,7 +32,7 @@ function MyLoans() {
   }, [token, logout, navigate]);
 
   const returnBook = async (loanId) => {
-    const res = await fetch(`http://localhost:5000/loans/${loanId}`, {
+    const res = await fetch(`${BASE_URL}/loans/${loanId}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -44,8 +47,9 @@ function MyLoans() {
             : loan
         )
       );
+      toast.success("Book returned successfully.");
     } else {
-      alert("Failed to return the book.");
+      toast.error("Failed to return the book.");
     }
   };
 

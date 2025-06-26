@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function ReadingList() {
   const [list, setList] = useState([]);
@@ -9,7 +12,7 @@ function ReadingList() {
 
   useEffect(() => {
     const fetchList = async () => {
-      const res = await fetch("http://localhost:5000/reading-list/", {
+      const res = await fetch(`${BASE_URL}/reading-list/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -29,7 +32,7 @@ function ReadingList() {
   }, [token, logout, navigate]);
 
   const removeFromList = async (id) => {
-    const res = await fetch(`http://localhost:5000/reading-list/${id}`, {
+    const res = await fetch(`${BASE_URL}/reading-list/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -38,8 +41,9 @@ function ReadingList() {
 
     if (res.ok) {
       setList((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Removed from reading list.");
     } else {
-      alert("Failed to remove from reading list.");
+      toast.error("Failed to remove from reading list.");
     }
   };
 
@@ -56,7 +60,20 @@ function ReadingList() {
               <br />
               <small>Note: {item.note || "No note added"}</small>
               <br />
-              <button onClick={() => removeFromList(item.id)}>Remove</button>
+              <button
+                onClick={() => removeFromList(item.id)}
+                style={{
+                  marginTop: "5px",
+                  padding: "5px 10px",
+                  backgroundColor: "#dc2626",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>

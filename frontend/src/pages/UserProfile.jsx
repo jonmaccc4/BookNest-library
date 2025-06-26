@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function UserProfile() {
   const { username, token, isAdmin } = useAuth();
 
@@ -8,10 +10,6 @@ export default function UserProfile() {
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    
-  }, []);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -23,7 +21,7 @@ export default function UserProfile() {
     if (password) updates.password = password;
 
     try {
-      const res = await fetch("http://localhost:5000/users/me", {
+      const res = await fetch(`${BASE_URL}/users/me`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 function Books() {
   const [books, setBooks] = useState([]);
@@ -10,44 +13,64 @@ function Books() {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const res = await fetch("http://localhost:5000/books/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.status === 401 || res.status === 403) {
-        logout();
-        navigate("/login");
-        return;
+      try {
+        const res = await fetch(`${BASE_URL}/books/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 401 || res.status === 403) {
+          logout();
+          navigate("/login");
+          return;
+        }
+        const data = await res.json();
+        if (res.ok) setBooks(data);
+      } catch (err) {
+        console.error("Failed to fetch books:", err);
+        toast.error("Failed to fetch books. Please try again later.");
       }
-      const data = await res.json();
-      if (res.ok) setBooks(data);
     };
+
     if (token) fetchBooks();
   }, [token, logout, navigate]);
 
   const borrowBook = async (bookId) => {
-    const res = await fetch("http://localhost:5000/loans/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ book_id: bookId }),
-    });
-    const data = await res.json();
-    alert(res.ok ? data.message : data.error || "Borrowing failed.");
+    try {
+      const res = await fetch(`${BASE_URL}/loans/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ book_id: bookId }),
+      });
+      const data = await res.json();
+      toast[res.ok ? "success" : "error"](
+        res.ok ? data.message : data.error || "Borrowing failed."
+      );
+    } catch (err) {
+      console.error("Borrowing error:", err);
+      toast.error("Network error while borrowing the book.");
+    }
   };
 
   const addToReadingList = async (bookId) => {
-    const res = await fetch("http://localhost:5000/reading-list/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ book_id: bookId }),
-    });
-    const data = await res.json();
-    alert(res.ok ? "Added to reading list." : data.error || "Failed.");
+    try {
+      const res = await fetch(`${BASE_URL}/reading-list/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ book_id: bookId }),
+      });
+      const data = await res.json();
+      toast[res.ok ? "success" : "error"](
+        res.ok ? "Added to reading list." : data.error || "Failed to add."
+      );
+    } catch (err) {
+      console.error("Reading list error:", err);
+      toast.error("Network error while adding to reading list.");
+    }
   };
 
   const filteredBooks = books.filter((b) => {
@@ -89,20 +112,19 @@ function Books() {
                   </p>
                 </div>
                 <div className="mt-4 flex space-x-3">
-                <button
-                  onClick={() => borrowBook(book.id)}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1 text-sm rounded transition"
-                >
-                  Borrow
-                </button>
-                <button
-                  onClick={() => addToReadingList(book.id)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 text-sm rounded transition"
-                >
-                  Add to Reading List
-                </button>
-              </div>
-
+                  <button
+                    onClick={() => borrowBook(book.id)}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-1 text-sm rounded transition"
+                  >
+                    Borrow
+                  </button>
+                  <button
+                    onClick={() => addToReadingList(book.id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-1 text-sm rounded transition"
+                  >
+                    Add to Reading List
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

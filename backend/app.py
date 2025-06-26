@@ -32,8 +32,9 @@ def create_app():
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(os.getenv('JWT_EXPIRES_HOURS', '24')))
     app.config['JWT_VERIFY_SUB'] = False
 
-    # CORS: Allow requests from React frontend
-    CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+    #
+    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+
 
     # Initialize extensions
     db.init_app(app)

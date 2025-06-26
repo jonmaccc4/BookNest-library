@@ -1,41 +1,45 @@
-import os
 from app import app
 from models import db, User, Book
-from werkzeug.security import generate_password_hash
-from dotenv import load_dotenv
+from flask_bcrypt import Bcrypt
 
+bcrypt = Bcrypt(app)
 
-load_dotenv()
-
-# Example admin credentials
 admin_data = {
     "username": "admin",
     "email": "admin@booknest.com",
-    "password_hash": generate_password_hash("admin123"),
+    "password": "admin123",  
     "is_admin": True
 }
 
 demo_books = [
-    Book(title="The Great Gatsby", author="F. Scott Fitzgerald", genre="Fiction"),
-    Book(title="1984", author="George Orwell", genre="Dystopian"),
-    Book(title="To Kill a Mockingbird", author="Harper Lee", genre="Classic"),
-    Book(title="Kino", author="James Clear", genre="Self-help"),
-    Book(title="Sapiens", author="Yuval Noah Harari", genre="History")
+    {"title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "genre": "Fiction"},
+    {"title": "1984", "author": "George Orwell", "genre": "Dystopian"},
+    {"title": "To Kill a Mockingbird", "author": "Harper Lee", "genre": "Historical"},
+    {"title": "The Hobbit", "author": "J.R.R. Tolkien", "genre": "Fantasy"},
+    {"title": "Atomic Habits", "author": "James Clear", "genre": "Self-help"},
 ]
 
 with app.app_context():
-    print("Seeding database...")
+    print(" Dropping and recreating tables...")
+    db.drop_all()
+    db.create_all()
 
-    # Clear existing data (optional)
-    db.session.query(Book).delete()
-    db.session.query(User).delete()
+    # Hash password
+    hashed_pw = bcrypt.generate_password_hash(admin_data["password"]).decode("utf-8")
 
-    # Create and add admin
-    admin_user = User(**admin_data)
+    # Create admin user
+    admin_user = User(
+        username=admin_data["username"],
+        email=admin_data["email"],
+        password_hash=hashed_pw,
+        is_admin=admin_data["is_admin"]
+    )
     db.session.add(admin_user)
 
-    # Add demo books
-    db.session.add_all(demo_books)
+    # Create demo books
+    for b in demo_books:
+        book = Book(title=b["title"], author=b["author"], genre=b["genre"])
+        db.session.add(book)
 
     db.session.commit()
-    print(" Done seeding.")
+    print(" Database seeded with admin user and demo books.")

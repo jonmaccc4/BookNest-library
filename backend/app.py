@@ -1,4 +1,4 @@
-# app.py
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,10 +8,10 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env
+
 load_dotenv()
 
-# Local imports
+
 from models import db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
@@ -23,7 +23,7 @@ from routes.reading_list import reading_list_bp
 def create_app():
     app = Flask(__name__)
 
-    # Database configuration
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///booknest.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -32,16 +32,20 @@ def create_app():
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(os.getenv('JWT_EXPIRES_HOURS', '24')))
     app.config['JWT_VERIFY_SUB'] = False
 
-    #
-    CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+    # CORS configuration (for frontend access)
+    CORS(app, resources={r"/*": {
+        "origins": [
+            "http://localhost:5173",                    
+            "https://booknest-frontend.onrender.com"     
+        ]
+    }})
 
-
-    # Initialize extensions
+   
     db.init_app(app)
     Migrate(app, db)
     JWTManager(app)
 
-    # Register blueprints
+    
     app.register_blueprint(users_bp)
     app.register_blueprint(books_bp)
     app.register_blueprint(loans_bp)
@@ -51,11 +55,7 @@ def create_app():
 
     return app
 
-# Print database info for verification
-print("From .env:", os.getenv('DATABASE_URL'))
-
 app = create_app()
-print("Using database:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 if __name__ == '__main__':
     app.run(debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true')

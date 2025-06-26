@@ -26,7 +26,7 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-
+# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -36,7 +36,7 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.username}>"
 
-
+# Routes
 @app.route('/')
 def home():
     return jsonify({"message": "Welcome to BookNest API"})
@@ -71,20 +71,20 @@ def login():
         return '', 200
 
     data = request.get_json()
-    email = data.get("email")
+    username = data.get("username")
     password = data.get("password")
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(username=username).first()
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
         token = create_access_token(identity=user.id)
         return jsonify({
             "token": token,
             "username": user.username,
-            "is_admin": False 
+            "is_admin": False  
         }), 200
 
-    return jsonify({"error": "Invalid email or password"}), 401
+    return jsonify({"error": "Invalid username or password"}), 401
 
 
 if __name__ == '__main__':

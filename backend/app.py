@@ -33,12 +33,7 @@ def create_app():
     app.config['JWT_VERIFY_SUB'] = False
 
     # CORS configuration (for frontend access)
-    CORS(app, resources={r"/*": {
-        "origins": [
-            "http://localhost:5173",                    
-            "https://booknest-frontend.onrender.com"     
-        ]
-    }})
+    CORS(app, origins=["https://book-nest-library.vercel.app"])
 
    
     db.init_app(app)

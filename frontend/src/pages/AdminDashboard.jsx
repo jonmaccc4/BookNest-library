@@ -21,16 +21,42 @@ function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetch(`${BASE_URL}/admin/users`, { headers }).then(res => res.json()).then(setUsers);
-    fetch(`${BASE_URL}/admin/books`, { headers }).then(res => res.json()).then(setBooks);
-    fetch(`${BASE_URL}/admin/loans`, { headers }).then(res => res.json()).then(setLoans);
+    const fetchData = async () => {
+      try {
+        const [userRes, bookRes, loanRes] = await Promise.all([
+          fetch(`${BASE_URL}/admin/users`, { headers }),
+          fetch(`${BASE_URL}/admin/books`, { headers }),
+          fetch(`${BASE_URL}/admin/loans`, { headers }),
+        ]);
+
+        if (!userRes.ok || !bookRes.ok || !loanRes.ok) {
+          throw new Error("Failed to fetch admin data");
+        }
+
+        const usersData = await userRes.json();
+        const booksData = await bookRes.json();
+        const loansData = await loanRes.json();
+
+        setUsers(Array.isArray(usersData) ? usersData.filter(Boolean) : []);
+        setBooks(Array.isArray(booksData) ? booksData.filter(Boolean) : []);
+        setLoans(Array.isArray(loansData) ? loansData.filter(Boolean) : []);
+      } catch (err) {
+        console.error("Error loading admin data:", err);
+        toast.error("Failed to load admin data.");
+        setUsers([]);
+        setBooks([]);
+        setLoans([]);
+      }
+    };
+
+    fetchData();
   }, [token]);
 
   const deleteUser = async (id) => {
     if (!window.confirm("Delete this user?")) return;
     const res = await fetch(`${BASE_URL}/admin/users/${id}`, { method: "DELETE", headers });
     if (res.ok) {
-      setUsers(users.filter(u => u.id !== id));
+      setUsers(users.filter(u => u?.id !== id));
       toast.success("User deleted");
     } else {
       toast.error("Failed to delete user");
@@ -41,7 +67,7 @@ function AdminDashboard() {
     if (!window.confirm("Delete this book?")) return;
     const res = await fetch(`${BASE_URL}/admin/books/${id}`, { method: "DELETE", headers });
     if (res.ok) {
-      setBooks(books.filter(b => b.id !== id));
+      setBooks(books.filter(b => b?.id !== id));
       toast.success("Book deleted");
     } else {
       toast.error("Failed to delete book");
@@ -52,7 +78,7 @@ function AdminDashboard() {
     if (!window.confirm("Delete this loan?")) return;
     const res = await fetch(`${BASE_URL}/admin/loans/${id}`, { method: "DELETE", headers });
     if (res.ok) {
-      setLoans(loans.filter(l => l.id !== id));
+      setLoans(loans.filter(l => l?.id !== id));
       toast.success("Loan deleted");
     } else {
       toast.error("Failed to delete loan");
@@ -142,7 +168,7 @@ function AdminDashboard() {
           <button onClick={createUser} className="bg-green-500 text-white px-3 py-1 rounded">+ Add User</button>
         </div>
         <ul className="bg-white rounded shadow divide-y">
-          {users.map(user => (
+          {Array.isArray(users) && users.filter(Boolean).map(user => (
             <li key={user.id} className="p-4 flex justify-between items-center">
               {editingUser?.id === user.id ? (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -181,7 +207,7 @@ function AdminDashboard() {
           <button onClick={createBook} className="bg-green-500 text-white px-3 py-1 rounded">+ Add Book</button>
         </div>
         <ul className="bg-white rounded shadow divide-y">
-          {books.map(book => (
+          {books.filter(Boolean).map(book => (
             <li key={book.id} className="p-4 flex justify-between items-center">
               {editingBook?.id === book.id ? (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -211,7 +237,7 @@ function AdminDashboard() {
       <section>
         <h3 className="text-xl font-semibold mb-2">All Loans</h3>
         <ul className="bg-white rounded shadow divide-y">
-          {loans.map((loan) => (
+          {loans.filter(Boolean).map((loan) => (
             <li key={loan.id} className="p-4 flex justify-between items-center">
               <span><strong>{loan.book_title}</strong> loaned to <em>{loan.user_email}</em></span>
               <button onClick={() => deleteLoan(loan.id)} className="text-red-600 hover:underline">Delete</button>

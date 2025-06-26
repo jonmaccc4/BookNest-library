@@ -12,68 +12,76 @@ function ReadingList() {
 
   useEffect(() => {
     const fetchList = async () => {
-      const res = await fetch(`${BASE_URL}/reading-list/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const res = await fetch(`${BASE_URL}/reading-list/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (res.status === 401 || res.status === 403) {
-        logout();
-        navigate("/login");
-        return;
+        if (res.status === 401 || res.status === 403) {
+          logout();
+          navigate("/login");
+          return;
+        }
+
+        const data = await res.json();
+        if (res.ok) setList(data);
+      } catch (err) {
+        toast.error("Failed to load reading list.");
       }
-
-      const data = await res.json();
-      if (res.ok) setList(data);
     };
 
     if (token) fetchList();
   }, [token, logout, navigate]);
 
   const removeFromList = async (id) => {
-    const res = await fetch(`${BASE_URL}/reading-list/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/reading-list/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (res.ok) {
-      setList((prev) => prev.filter((item) => item.id !== id));
-      toast.success("Removed from reading list.");
-    } else {
-      toast.error("Failed to remove from reading list.");
+      if (res.ok) {
+        setList((prev) => prev.filter((item) => item.id !== id));
+        toast.success("Removed from reading list.");
+      } else {
+        toast.error("Failed to remove from reading list.");
+      }
+    } catch (err) {
+      toast.error("Network error while removing item.");
     }
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "auto" }}>
-      <h2>My Reading List</h2>
+    <div className="max-w-2xl mx-auto p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">My Reading List</h2>
       {list.length === 0 ? (
-        <p>Your list is empty.</p>
+        <p className="text-gray-600">Your list is empty.</p>
       ) : (
-        <ul>
+        <ul className="space-y-4">
           {list.map((item) => (
-            <li key={item.id} style={{ marginBottom: "10px" }}>
-              <strong>{item.book.title}</strong> by {item.book.author} ({item.book.genre})
-              <br />
-              <small>Note: {item.note || "No note added"}</small>
-              <br />
-              <button
-                onClick={() => removeFromList(item.id)}
-                style={{
-                  marginTop: "5px",
-                  padding: "5px 10px",
-                  backgroundColor: "#dc2626",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Remove
-              </button>
+            <li
+              key={item.id}
+              className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-2"
+            >
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">
+                  {item.book.title}
+                </h4>
+                <p className="text-sm text-gray-700">
+                  by {item.book.author} ({item.book.genre})
+                </p>
+                <p className="text-sm text-gray-500 italic">
+                  Note: {item.note || "No note added"}
+                </p>
+              </div>
+              <div className="mt-2">
+                <button
+                  onClick={() => removeFromList(item.id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                >
+                  Remove
+                </button>
+              </div>
             </li>
           ))}
         </ul>

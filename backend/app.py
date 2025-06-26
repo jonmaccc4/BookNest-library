@@ -1,55 +1,45 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from datetime import timedelta
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+# Initialize app and extensions
+app = Flask(__name__)
 
-from models import db
-from routes.auth import auth_bp
-from routes.admin import admin_bp
-from routes.users import users_bp
-from routes.books import books_bp
-from routes.loans import loans_bp
-from routes.reading_list import reading_list_bp
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'your_secret_key'
+app.config['JSON_SORT_KEYS'] = False
 
-def create_app():
-    app = Flask(__name__)
+# Allow CORS for your Vercel frontend
+CORS(app, supports_credentials=True, origins=[
+    "https://book-nest-library-4epynwzuc-jonmacs-projects.vercel.app"
+])
 
-   
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///booknest.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'replace-me')
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=int(os.getenv('JWT_EXPIRES_HOURS', '24')))
-    app.config['JWT_VERIFY_SUB'] = False
+# Example route
+@app.route('/')
+def home():
+    return jsonify({"message": "Welcome to BookNest backend!"})
 
-   
-    CORS(app, origins=["https://book-nest-library.vercel.app"], supports_credentials=True)
+# Example login route
+@app.route('/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
 
-    
-    db.init_app(app)
-    Migrate(app, db)
-    JWTManager(app)
+    # Dummy check - replace with actual user lookup and password validation
+    if username == "admin" and password == "password":
+        return jsonify({"token": "dummy-jwt-token"}), 200
+    return jsonify({"error": "Invalid credentials"}), 401
 
-    app.register_blueprint(users_bp)
-    app.register_blueprint(books_bp)
-    app.register_blueprint(loans_bp)
-    app.register_blueprint(reading_list_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(admin_bp)
-
-    @app.route("/")
-    def index():
-        return {"message": "Welcome to BookNest API!"}, 200
-
-    return app
-
-app = create_app()
-
+# Run the app
 if __name__ == '__main__':
-    app.run(debug=os.getenv('FLASK_DEBUG', 'false').lower() == 'true')
+    app.run()

@@ -8,25 +8,25 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Configuration
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
-# Allow Vercel frontend
+
 CORS(app, supports_credentials=True, origins=[
     "https://book-nest-library.vercel.app",
     "https://book-nest-library-4epynwzuc-jonmacs-projects.vercel.app"
 ])
 
-# Extensions
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-# Models
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -36,7 +36,7 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.username}>"
 
-# Routes
+
 @app.route('/')
 def home():
     return jsonify({"message": "Welcome to BookNest API"})
@@ -71,17 +71,21 @@ def login():
         return '', 200
 
     data = request.get_json()
-    username = data.get("username")
+    email = data.get("email")
     password = data.get("password")
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(email=email).first()
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
         token = create_access_token(identity=user.id)
-        return jsonify({"token": token, "username": user.username}), 200
+        return jsonify({
+            "token": token,
+            "username": user.username,
+            "is_admin": False 
+        }), 200
 
-    return jsonify({"error": "Invalid username or password"}), 401
+    return jsonify({"error": "Invalid email or password"}), 401
 
-# Run the app
+
 if __name__ == '__main__':
     app.run(debug=True)

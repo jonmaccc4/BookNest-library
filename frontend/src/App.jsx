@@ -21,11 +21,14 @@ function App() {
 
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<div className="p-4">Welcome to BookNest</div>} />
+            {/* Redirect root path to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+
+            {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/loans" element={<Navigate to="/loans/my" replace />} />
 
+            {/* Protected routes */}
             <Route
               path="/books"
               element={
@@ -33,6 +36,10 @@ function App() {
                   <Books />
                 </PrivateRoute>
               }
+            />
+            <Route
+              path="/loans"
+              element={<Navigate to="/loans/my" replace />}
             />
             <Route
               path="/loans/my"
@@ -67,6 +74,7 @@ function App() {
               }
             />
 
+            {/* Fallback route */}
             <Route path="*" element={<div className="p-4">Page not found</div>} />
           </Routes>
         </main>
@@ -77,6 +85,5 @@ function App() {
     </Router>
   );
 }
-// Trigger redeploy
 
 export default App;

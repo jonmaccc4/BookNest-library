@@ -7,11 +7,11 @@ export default function Navbar() {
 
   return (
     <nav className="bg-gray-800 text-white">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 space-y-3 sm:space-y-0">
-        {/* Left: Brand + Links */}
-        <div>
-          <div className="text-lg font-bold mb-1">BookNest</div>
-          <div className="flex space-x-6">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        {/* Left: Brand and Links */}
+        <div className="flex items-center space-x-10">
+          <div className="text-xl font-bold">BookNest</div>
+          <div className="flex space-x-6 text-sm">
             <Link to="/books" className="hover:text-gray-300 transition">
               Books
             </Link>
@@ -32,9 +32,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Right: Welcome + Logout */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm">
-          <span className="bg-gray-700 rounded-full px-3 py-1 mb-1 sm:mb-0">
+        {/* Right: Welcome and Logout */}
+        <div className="flex items-center space-x-4 text-sm">
+          <span className="bg-gray-700 px-3 py-1 rounded-full">
             Welcome, <span className="font-semibold">{username}</span>!
           </span>
           <button

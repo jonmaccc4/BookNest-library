@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
-from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-db = SQLAlchemy()
 
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +23,7 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.username}>"
 
+
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
@@ -42,11 +42,18 @@ class Loan(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     borrowed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    due_date = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=14))  
+    due_date = db.Column(db.DateTime, default=lambda: datetime.utcnow() + timedelta(days=14))
     returned_at = db.Column(db.DateTime)
+
+    def __repr__(self):
+        return f"<Loan Book={self.book_id} User={self.user_id}>"
+
 
 class ReadingList(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     note = db.Column(db.String)
+
+    def __repr__(self):
+        return f"<ReadingList User={self.user_id} Book={self.book_id}>"

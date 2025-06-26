@@ -13,26 +13,35 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`${BASE_URL}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", 
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      toast.success("Registration successful! You can now log in.");
-      navigate("/login");
-    } else {
-      toast.error(data.error || "Registration failed. Please try again.");
+      if (res.ok) {
+        toast.success("Registration successful! You can now log in.");
+        navigate("/login");
+      } else {
+        toast.error(data.error || "Registration failed. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Server error. Please try again later.");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-md rounded-lg w-full max-w-md p-8">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Create an Account</h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+          Create an Account
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -69,7 +78,10 @@ function Register() {
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 hover:underline font-medium">
+          <Link
+            to="/login"
+            className="text-indigo-600 hover:underline font-medium"
+          >
             Login
           </Link>
         </p>

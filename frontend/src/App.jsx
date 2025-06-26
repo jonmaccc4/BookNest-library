@@ -21,10 +21,8 @@ function App() {
 
         <main className="flex-grow">
           <Routes>
-            {/* Redirect root path to login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-
             {/* Public routes */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 

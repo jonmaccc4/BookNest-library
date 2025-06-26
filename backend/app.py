@@ -53,6 +53,10 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
 
+    @app.route("/")
+def index():
+    return {"message": "Welcome to BookNest API!"}, 200
+    
     return app
 
 app = create_app()

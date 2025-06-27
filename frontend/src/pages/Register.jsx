@@ -19,7 +19,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", 
+        credentials: "include",
         body: JSON.stringify({ username, email, password }),
       });
 
@@ -27,7 +27,11 @@ function Register() {
 
       if (res.ok) {
         toast.success("Registration successful! You can now log in.");
-        navigate("/login");
+
+       
+        setTimeout(() => {
+          navigate("/login");
+        }, 150);
       } else {
         toast.error(data.error || "Registration failed. Please try again.");
       }

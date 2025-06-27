@@ -29,7 +29,11 @@ function Login() {
       if (res.ok) {
         login(data.token, data.username, data.is_admin);
         toast.success(`Welcome back, ${data.username}!`);
-        navigate(data.is_admin ? "/admin" : "/books");
+
+        
+        setTimeout(() => {
+          navigate(data.is_admin ? "/admin" : "/books");
+        }, 150);
       } else {
         toast.error(data.error || "Login failed. Please try again.");
       }

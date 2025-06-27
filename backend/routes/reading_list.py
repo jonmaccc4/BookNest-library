@@ -4,10 +4,18 @@ from models import db, ReadingList, Book
 
 reading_list_bp = Blueprint('reading_list', __name__, url_prefix='/reading-list')
 
-# POST - Add a book to the reading list
+
+@reading_list_bp.route('/', methods=['OPTIONS'])
+def reading_list_options():
+    return '', 200
+
+
 @reading_list_bp.route('/', methods=['POST'])
 @jwt_required()
 def add_to_reading_list():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Invalid JSON payload'}), 400
@@ -33,10 +41,13 @@ def add_to_reading_list():
 
     return jsonify({'message': 'Book added to reading list'}), 201
 
-# GET - View current user's reading list
+
 @reading_list_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_reading_list():
+    if request.method == 'OPTIONS':
+        return '', 200
+
     user_id = get_jwt_identity()
     items = ReadingList.query.filter_by(user_id=user_id).all()
 
@@ -53,10 +64,13 @@ def get_reading_list():
         } for item in items
     ]), 200
 
-# PATCH - Update note in a reading list entry
-@reading_list_bp.route('/<int:id>', methods=['PATCH'])
+
+@reading_list_bp.route('/<int:id>', methods=['PATCH', 'OPTIONS'])
 @jwt_required()
 def update_reading_note(id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
     entry = ReadingList.query.get(id)
     if not entry:
         return jsonify({'error': 'Reading list entry not found'}), 404
@@ -74,10 +88,13 @@ def update_reading_note(id):
 
     return jsonify({'message': 'Reading list note updated'}), 200
 
-# DELETE - Remove book from reading list
-@reading_list_bp.route('/<int:id>', methods=['DELETE'])
+
+@reading_list_bp.route('/<int:id>', methods=['DELETE', 'OPTIONS'])
 @jwt_required()
 def remove_from_reading_list(id):
+    if request.method == 'OPTIONS':
+        return '', 200
+
     entry = ReadingList.query.get(id)
     if not entry:
         return jsonify({'error': 'Reading list entry not found'}), 404

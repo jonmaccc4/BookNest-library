@@ -5,7 +5,14 @@ from datetime import datetime, timedelta
 
 loans_bp = Blueprint('loans', __name__, url_prefix='/loans')
 
-# GET all loans (admin only)
+
+@loans_bp.route('/', methods=['OPTIONS'])
+@loans_bp.route('/my', methods=['OPTIONS'])
+@loans_bp.route('/<int:id>', methods=['OPTIONS'])
+def loans_options(id=None):
+    return '', 200
+
+
 @loans_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_loans():
@@ -25,7 +32,7 @@ def get_loans():
         } for loan in loans
     ]), 200
 
-# GET current user's own loans
+
 @loans_bp.route('/my', methods=['GET'])
 @jwt_required()
 def get_my_loans():
@@ -46,8 +53,6 @@ def get_my_loans():
         } for loan in my_loans
     ]), 200
 
-
-# POST user borrows a book
 @loans_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_loan():
@@ -81,7 +86,6 @@ def create_loan():
     return jsonify({'message': 'Book borrowed successfully'}), 201
 
 
-# PATCH user returns a book
 @loans_bp.route('/<int:id>', methods=['PATCH'])
 @jwt_required()
 def return_book(id):
@@ -101,7 +105,6 @@ def return_book(id):
     return jsonify({'message': 'Book returned successfully'}), 200
 
 
-# DELETE a loan
 @loans_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_loan(id):

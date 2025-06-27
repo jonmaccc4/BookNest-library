@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem("token", newToken);
     localStorage.setItem("username", user);
-    localStorage.setItem("is_admin", adminFlag);
+    localStorage.setItem("is_admin", adminFlag ? "true" : "false"); // Store as string
   };
 
   const logout = () => {

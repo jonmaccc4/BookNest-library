@@ -36,9 +36,12 @@ function Login() {
 
       if (res.ok) {
         login(data.token, data.username, data.is_admin);
-        toast.success(`Welcome back, ${data.username}!`, {
-          onClose: () => navigate(data.is_admin ? "/admin" : "/books"),
-        });
+        toast.success(`Welcome back, ${data.username}!`);
+
+       
+        setTimeout(() => {
+          navigate(data.is_admin ? "/admin" : "/books");
+        }, 1000);
       } else {
         toast.error(data.error || "Login failed. Please try again.");
       }

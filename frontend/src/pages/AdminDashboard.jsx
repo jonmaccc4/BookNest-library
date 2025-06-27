@@ -41,11 +41,9 @@ function AdminDashboard() {
         setBooks(booksData.filter(Boolean));
         setLoans(loansData.filter(Boolean));
 
-        toast.dismiss();
         toast.success("Admin data loaded.");
       } catch (err) {
         console.error("Error loading admin data:", err);
-        toast.dismiss();
         toast.error("Failed to load admin data.");
       }
     };
@@ -67,11 +65,9 @@ function AdminDashboard() {
       const created = await res.json();
       setUsers([...users, created]);
       setNewUser({ username: "", email: "", password: "", is_admin: false });
-      toast.dismiss();
       toast.success("User created.");
     } else {
       const error = await res.json();
-      toast.dismiss();
       toast.error(error.error || "Failed to create user.");
     }
   };
@@ -90,11 +86,9 @@ function AdminDashboard() {
       const created = await res.json();
       setBooks([...books, created]);
       setNewBook({ title: "", author: "", genre: "" });
-      toast.dismiss();
       toast.success("Book added.");
     } else {
       const error = await res.json();
-      toast.dismiss();
       toast.error(error.error || "Failed to add book.");
     }
   };
@@ -104,10 +98,8 @@ function AdminDashboard() {
     const res = await fetch(`${BASE_URL}/admin/users/${id}`, { method: "DELETE", headers });
     if (res.ok) {
       setUsers(users.filter(u => u?.id !== id));
-      toast.dismiss();
       toast.success("User deleted.");
     } else {
-      toast.dismiss();
       toast.error("Failed to delete user.");
     }
   };
@@ -117,10 +109,8 @@ function AdminDashboard() {
     const res = await fetch(`${BASE_URL}/admin/books/${id}`, { method: "DELETE", headers });
     if (res.ok) {
       setBooks(books.filter(b => b?.id !== id));
-      toast.dismiss();
       toast.success("Book deleted.");
     } else {
-      toast.dismiss();
       toast.error("Failed to delete book.");
     }
   };
@@ -130,10 +120,8 @@ function AdminDashboard() {
     const res = await fetch(`${BASE_URL}/admin/loans/${id}`, { method: "DELETE", headers });
     if (res.ok) {
       setLoans(loans.filter(l => l?.id !== id));
-      toast.dismiss();
       toast.success("Loan deleted.");
     } else {
-      toast.dismiss();
       toast.error("Failed to delete loan.");
     }
   };
@@ -147,10 +135,8 @@ function AdminDashboard() {
     if (res.ok) {
       setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
       setEditingUser(null);
-      toast.dismiss();
       toast.success("User updated.");
     } else {
-      toast.dismiss();
       toast.error("Failed to update user.");
     }
   };
@@ -164,10 +150,8 @@ function AdminDashboard() {
     if (res.ok) {
       setBooks(books.map(b => b.id === editingBook.id ? editingBook : b));
       setEditingBook(null);
-      toast.dismiss();
       toast.success("Book updated.");
     } else {
-      toast.dismiss();
       toast.error("Failed to update book.");
     }
   };

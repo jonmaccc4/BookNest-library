@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify"; 
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -25,8 +26,10 @@ function Register() {
       const data = await res.json();
 
       if (res.ok) {
-        
-        localStorage.setItem("registrationSuccess", "Registration successful! You can now log in.");
+        localStorage.setItem(
+          "registrationSuccess",
+          "Registration successful! You can now log in."
+        );
         navigate("/login");
       } else {
         toast.error(data.error || "Registration failed. Please try again.");

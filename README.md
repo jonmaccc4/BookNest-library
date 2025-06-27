@@ -85,5 +85,11 @@ There are no bugs and the application works perfectly
 ## Support and contact details
 email: jonmac2454@gmail.com
 
+## Video of the presentation on how it works
+https://www.loom.com/share/b4e54d5fa70445438ef305720b5ea579?sid=96058e3e-89a8-479f-9861-47d70d472679
+
+- You can check out the video on loom.
+
+
 ## license
 MIT License © 2025 jondevv

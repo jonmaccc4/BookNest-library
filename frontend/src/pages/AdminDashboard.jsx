@@ -37,55 +37,27 @@ function AdminDashboard() {
         const booksData = await bookRes.json();
         const loansData = await loanRes.json();
 
-        setUsers(Array.isArray(usersData) ? usersData.filter(Boolean) : []);
-        setBooks(Array.isArray(booksData) ? booksData.filter(Boolean) : []);
-        setLoans(Array.isArray(loansData) ? loansData.filter(Boolean) : []);
+        setUsers(usersData.filter(Boolean));
+        setBooks(booksData.filter(Boolean));
+        setLoans(loansData.filter(Boolean));
+
+        toast.dismiss();
+        toast.success("Admin data loaded.");
       } catch (err) {
         console.error("Error loading admin data:", err);
+        toast.dismiss();
         toast.error("Failed to load admin data.");
-        setUsers([]);
-        setBooks([]);
-        setLoans([]);
       }
     };
 
     fetchData();
   }, [token]);
 
-  const deleteUser = async (id) => {
-    if (!window.confirm("Delete this user?")) return;
-    const res = await fetch(`${BASE_URL}/admin/users/${id}`, { method: "DELETE", headers });
-    if (res.ok) {
-      setUsers(users.filter(u => u?.id !== id));
-      toast.success("User deleted");
-    } else {
-      toast.error("Failed to delete user");
-    }
-  };
-
-  const deleteBook = async (id) => {
-    if (!window.confirm("Delete this book?")) return;
-    const res = await fetch(`${BASE_URL}/admin/books/${id}`, { method: "DELETE", headers });
-    if (res.ok) {
-      setBooks(books.filter(b => b?.id !== id));
-      toast.success("Book deleted");
-    } else {
-      toast.error("Failed to delete book");
-    }
-  };
-
-  const deleteLoan = async (id) => {
-    if (!window.confirm("Delete this loan?")) return;
-    const res = await fetch(`${BASE_URL}/admin/loans/${id}`, { method: "DELETE", headers });
-    if (res.ok) {
-      setLoans(loans.filter(l => l?.id !== id));
-      toast.success("Loan deleted");
-    } else {
-      toast.error("Failed to delete loan");
-    }
-  };
-
   const createUser = async () => {
+    if (!newUser.username || !newUser.email || !newUser.password) {
+      toast.warning("Please fill all user fields.");
+      return;
+    }
     const res = await fetch(`${BASE_URL}/admin/users`, {
       method: "POST",
       headers,
@@ -95,14 +67,20 @@ function AdminDashboard() {
       const created = await res.json();
       setUsers([...users, created]);
       setNewUser({ username: "", email: "", password: "", is_admin: false });
-      toast.success("User created");
+      toast.dismiss();
+      toast.success("User created.");
     } else {
       const error = await res.json();
-      toast.error(error.error || "Failed to create user");
+      toast.dismiss();
+      toast.error(error.error || "Failed to create user.");
     }
   };
 
   const createBook = async () => {
+    if (!newBook.title || !newBook.author || !newBook.genre) {
+      toast.warning("Please fill all book fields.");
+      return;
+    }
     const res = await fetch(`${BASE_URL}/admin/books`, {
       method: "POST",
       headers,
@@ -112,10 +90,51 @@ function AdminDashboard() {
       const created = await res.json();
       setBooks([...books, created]);
       setNewBook({ title: "", author: "", genre: "" });
-      toast.success("Book added");
+      toast.dismiss();
+      toast.success("Book added.");
     } else {
       const error = await res.json();
-      toast.error(error.error || "Failed to add book");
+      toast.dismiss();
+      toast.error(error.error || "Failed to add book.");
+    }
+  };
+
+  const deleteUser = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+    const res = await fetch(`${BASE_URL}/admin/users/${id}`, { method: "DELETE", headers });
+    if (res.ok) {
+      setUsers(users.filter(u => u?.id !== id));
+      toast.dismiss();
+      toast.success("User deleted.");
+    } else {
+      toast.dismiss();
+      toast.error("Failed to delete user.");
+    }
+  };
+
+  const deleteBook = async (id) => {
+    if (!window.confirm("Delete this book?")) return;
+    const res = await fetch(`${BASE_URL}/admin/books/${id}`, { method: "DELETE", headers });
+    if (res.ok) {
+      setBooks(books.filter(b => b?.id !== id));
+      toast.dismiss();
+      toast.success("Book deleted.");
+    } else {
+      toast.dismiss();
+      toast.error("Failed to delete book.");
+    }
+  };
+
+  const deleteLoan = async (id) => {
+    if (!window.confirm("Delete this loan?")) return;
+    const res = await fetch(`${BASE_URL}/admin/loans/${id}`, { method: "DELETE", headers });
+    if (res.ok) {
+      setLoans(loans.filter(l => l?.id !== id));
+      toast.dismiss();
+      toast.success("Loan deleted.");
+    } else {
+      toast.dismiss();
+      toast.error("Failed to delete loan.");
     }
   };
 
@@ -128,9 +147,11 @@ function AdminDashboard() {
     if (res.ok) {
       setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
       setEditingUser(null);
-      toast.success("User updated");
+      toast.dismiss();
+      toast.success("User updated.");
     } else {
-      toast.error("Failed to update user");
+      toast.dismiss();
+      toast.error("Failed to update user.");
     }
   };
 
@@ -143,9 +164,11 @@ function AdminDashboard() {
     if (res.ok) {
       setBooks(books.map(b => b.id === editingBook.id ? editingBook : b));
       setEditingBook(null);
-      toast.success("Book updated");
+      toast.dismiss();
+      toast.success("Book updated.");
     } else {
-      toast.error("Failed to update book");
+      toast.dismiss();
+      toast.error("Failed to update book.");
     }
   };
 
@@ -154,13 +177,13 @@ function AdminDashboard() {
       <ToastContainer position="top-right" autoClose={3000} />
       <h2 className="text-2xl font-bold text-gray-700">Admin Dashboard</h2>
 
-      {/* USERS */}
+      {/* USERS SECTION */}
       <section>
         <h3 className="text-xl font-semibold mb-2">All Users</h3>
         <div className="mb-4 space-y-2">
-          <input value={newUser.username} onChange={e => setNewUser({ ...newUser, username: e.target.value })} placeholder="Username" className="border px-2 py-1 rounded" />
-          <input value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} placeholder="Email" className="border px-2 py-1 rounded" />
-          <input value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} placeholder="Password" className="border px-2 py-1 rounded" type="password" />
+          <input value={newUser.username} onChange={e => setNewUser({ ...newUser, username: e.target.value })} placeholder="Username" className="border px-2 py-1 rounded w-full" />
+          <input value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} placeholder="Email" className="border px-2 py-1 rounded w-full" />
+          <input value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} placeholder="Password" className="border px-2 py-1 rounded w-full" type="password" />
           <label className="inline-flex items-center">
             <input type="checkbox" checked={newUser.is_admin} onChange={e => setNewUser({ ...newUser, is_admin: e.target.checked })} />
             <span className="ml-2">Admin</span>
@@ -168,7 +191,7 @@ function AdminDashboard() {
           <button onClick={createUser} className="bg-green-500 text-white px-3 py-1 rounded">+ Add User</button>
         </div>
         <ul className="bg-white rounded shadow divide-y">
-          {Array.isArray(users) && users.filter(Boolean).map(user => (
+          {users.map(user => (
             <li key={user.id} className="p-4 flex justify-between items-center">
               {editingUser?.id === user.id ? (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -180,7 +203,7 @@ function AdminDashboard() {
                   </label>
                   <div className="flex gap-2">
                     <button onClick={saveUserEdit} className="text-green-600">Save</button>
-                    <button onClick={() => setEditingUser(null)} className="text-gray-500">Cancel</button>
+                    <button onClick={() => { setEditingUser(null); toast.info("Edit canceled."); }} className="text-gray-500">Cancel</button>
                   </div>
                 </div>
               ) : (
@@ -197,17 +220,17 @@ function AdminDashboard() {
         </ul>
       </section>
 
-      {/* BOOKS */}
+      {/* BOOKS SECTION */}
       <section>
         <h3 className="text-xl font-semibold mb-2">All Books</h3>
         <div className="mb-4 space-y-2">
-          <input value={newBook.title} onChange={e => setNewBook({ ...newBook, title: e.target.value })} placeholder="Title" className="border px-2 py-1 rounded" />
-          <input value={newBook.author} onChange={e => setNewBook({ ...newBook, author: e.target.value })} placeholder="Author" className="border px-2 py-1 rounded" />
-          <input value={newBook.genre} onChange={e => setNewBook({ ...newBook, genre: e.target.value })} placeholder="Genre" className="border px-2 py-1 rounded" />
+          <input value={newBook.title} onChange={e => setNewBook({ ...newBook, title: e.target.value })} placeholder="Title" className="border px-2 py-1 rounded w-full" />
+          <input value={newBook.author} onChange={e => setNewBook({ ...newBook, author: e.target.value })} placeholder="Author" className="border px-2 py-1 rounded w-full" />
+          <input value={newBook.genre} onChange={e => setNewBook({ ...newBook, genre: e.target.value })} placeholder="Genre" className="border px-2 py-1 rounded w-full" />
           <button onClick={createBook} className="bg-green-500 text-white px-3 py-1 rounded">+ Add Book</button>
         </div>
         <ul className="bg-white rounded shadow divide-y">
-          {books.filter(Boolean).map(book => (
+          {books.map(book => (
             <li key={book.id} className="p-4 flex justify-between items-center">
               {editingBook?.id === book.id ? (
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -216,7 +239,7 @@ function AdminDashboard() {
                   <input value={editingBook.genre} onChange={e => setEditingBook({ ...editingBook, genre: e.target.value })} className="border px-2 py-1 rounded w-full" />
                   <div className="flex gap-2">
                     <button onClick={saveBookEdit} className="text-green-600">Save</button>
-                    <button onClick={() => setEditingBook(null)} className="text-gray-500">Cancel</button>
+                    <button onClick={() => { setEditingBook(null); toast.info("Edit canceled."); }} className="text-gray-500">Cancel</button>
                   </div>
                 </div>
               ) : (
@@ -233,11 +256,11 @@ function AdminDashboard() {
         </ul>
       </section>
 
-      {/* LOANS */}
+      {/* LOANS SECTION */}
       <section>
         <h3 className="text-xl font-semibold mb-2">All Loans</h3>
         <ul className="bg-white rounded shadow divide-y">
-          {loans.filter(Boolean).map((loan) => (
+          {loans.map(loan => (
             <li key={loan.id} className="p-4 flex justify-between items-center">
               <span><strong>{loan.book_title}</strong> loaned to <em>{loan.user_email}</em></span>
               <button onClick={() => deleteLoan(loan.id)} className="text-red-600 hover:underline">Delete</button>

@@ -32,10 +32,11 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-CORS(app, supports_credentials=True, origins=[
+CORS(app, resources={r"/*": {"origins": [
     "https://book-nest-library.vercel.app",
     "https://book-nest-library-4epynwzuc-jonmacs-projects.vercel.app"
-])
+]}}, supports_credentials=True)
+
 
 
 @jwt.additional_claims_loader

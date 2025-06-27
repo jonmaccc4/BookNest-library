@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -11,6 +11,15 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  
+  useEffect(() => {
+    const message = localStorage.getItem("registrationSuccess");
+    if (message) {
+      toast.success(message);
+      localStorage.removeItem("registrationSuccess");
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -21,7 +30,7 @@ function Login() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ email: username, password }), 
+        body: JSON.stringify({ email: username, password }),
       });
 
       const data = await res.json();
@@ -30,7 +39,6 @@ function Login() {
         login(data.token, data.username, data.is_admin);
         toast.success(`Welcome back, ${data.username}!`);
 
-        
         setTimeout(() => {
           navigate(data.is_admin ? "/admin" : "/books");
         }, 150);

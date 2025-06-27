@@ -7,6 +7,9 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from datetime import timedelta
 
 
+from models import db, User, Book
+
+
 app = Flask(__name__)
 
 
@@ -16,36 +19,16 @@ app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
 
-CORS(app, supports_credentials=True, origins=[
-    "https://book-nest-library.vercel.app",
-    "https://book-nest-library-4epynwzuc-jonmacs-projects.vercel.app"
-])
-
-
-db = SQLAlchemy(app)
+db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):
-        return f"<User {self.username}>"
-
-class Book(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    author = db.Column(db.String(120), nullable=False)
-    genre = db.Column(db.String(80), nullable=False)
-
-    def __repr__(self):
-        return f"<Book {self.title}>"
+CORS(app, supports_credentials=True, origins=[
+    "https://book-nest-library.vercel.app",
+    "https://book-nest-library-4epynwzuc-jonmacs-projects.vercel.app"
+])
 
 
 @jwt.additional_claims_loader
@@ -59,6 +42,8 @@ def add_claims_to_access_token(identity):
 @app.route('/')
 def home():
     return jsonify({"message": "Welcome to BookNest API"})
+
+
 
 @app.route('/auth/register', methods=['POST', 'OPTIONS'])
 def register():
@@ -83,6 +68,7 @@ def register():
 
     return jsonify({"message": "User registered successfully!"}), 201
 
+
 @app.route('/auth/login', methods=['POST', 'OPTIONS'])
 def login():
     if request.method == 'OPTIONS':
@@ -105,6 +91,7 @@ def login():
     return jsonify({"error": "Invalid username or password"}), 401
 
 
+
 from flask import Blueprint
 
 books_bp = Blueprint('books', __name__, url_prefix='/books')
@@ -117,6 +104,7 @@ def get_books():
         {"id": b.id, "title": b.title, "author": b.author, "genre": b.genre}
         for b in books
     ]), 200
+
 
 @books_bp.route('/search', methods=['GET'])
 @jwt_required()
@@ -139,6 +127,7 @@ def search_books():
         for b in books
     ]), 200
 
+
 @books_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_book():
@@ -159,6 +148,7 @@ def create_book():
     db.session.commit()
     return jsonify({'message': 'Book added successfully'}), 201
 
+
 @books_bp.route('/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_book(id):
@@ -173,6 +163,7 @@ def delete_book(id):
     db.session.delete(book)
     db.session.commit()
     return jsonify({'message': 'Book deleted successfully'}), 200
+
 
 
 app.register_blueprint(books_bp)

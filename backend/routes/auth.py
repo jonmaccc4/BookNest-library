@@ -6,13 +6,13 @@ from flask_jwt_extended import create_access_token
 bcrypt = Bcrypt()
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-# 
+
 @auth_bp.route('/register', methods=['OPTIONS'])
 @auth_bp.route('/login', methods=['OPTIONS'])
 def auth_options():
     return '', 200
 
-# Register 
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -36,7 +36,7 @@ def register():
 
     return jsonify({"message": "User registered successfully"}), 201
 
-# Login
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -52,4 +52,11 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        token = create_access_token(identity=user.id, additional_cl_
+        token = create_access_token(identity=user.id)
+        return jsonify({
+            "token": token,
+            "username": user.username,
+            "is_admin": user.is_admin
+        }), 200
+
+    return jsonify({"error": "Invalid email or password"}), 401

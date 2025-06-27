@@ -21,7 +21,7 @@ function Login() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email: username, password }), 
       });
 
       const data = await res.json();
@@ -48,7 +48,7 @@ function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Username"
+            placeholder="Email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
